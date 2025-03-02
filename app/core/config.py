@@ -13,7 +13,6 @@
 # See https://pydantic-docs.helpmanual.io/usage/settings/
 # Note, complex types like lists are read as json-encoded strings.
 
-
 from functools import lru_cache
 from pathlib import Path
 
@@ -35,11 +34,7 @@ class Security(BaseModel):
 
 
 class Database(BaseModel):
-    hostname: str = "postgres"
-    username: str = "postgres"
-    password: SecretStr
-    port: int = 5432
-    db: str = "postgres"
+    db: str = "sqlite.db"  # Nombre del archivo de la base de datos SQLite
 
 
 class Settings(BaseSettings):
@@ -50,12 +45,8 @@ class Settings(BaseSettings):
     @property
     def sqlalchemy_database_uri(self) -> URL:
         return URL.create(
-            drivername="postgresql+asyncpg",
-            username=self.database.username,
-            password=self.database.password.get_secret_value(),
-            host=self.database.hostname,
-            port=self.database.port,
-            database=self.database.db,
+            drivername="sqlite+aiosqlite",  # Usar aiosqlite para soporte asíncrono
+            database=f"{PROJECT_DIR}/{self.database.db}",  # Ruta al archivo de la base de datos
         )
 
     model_config = SettingsConfigDict(
